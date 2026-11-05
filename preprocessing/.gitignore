@@ -1,0 +1,19 @@
+# Virtual environment
+newvenv/
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Temporary files
+*.log
+debug_preprocessed.png
+
+# IDE files
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

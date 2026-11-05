@@ -1,0 +1,508 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Handwritten Digit Recognition</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f0f4f8;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 850px;
+            width: 100%;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px #ccc;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-top: 15px;
+        }
+
+        h2 {
+            font-size: 28px;
+        }
+
+        canvas {
+            display: block;
+            width: 280px;
+            height: 280px;
+            max-width: 100%;
+            margin: 15px auto;
+            border: 2px solid #333;
+            background: black;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        button,
+        input {
+            margin: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        #preview {
+            display: none;
+            max-width: 250px;
+            max-height: 250px;
+            margin: 15px auto;
+            border: 1px solid #ccc;
+            object-fit: contain;
+        }
+
+        .result {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px auto;
+            overflow-wrap: anywhere;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .result:empty {
+            display: none;
+        }
+
+        hr {
+            margin: 35px 0;
+            border: none;
+            border-top: 1px solid #ccc;
+        }
+
+        .hint {
+            color: #555;
+            font-size: 16px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            h2 {
+                font-size: 23px;
+            }
+
+            canvas {
+                width: 280px;
+                height: 280px;
+            }
+
+            .result {
+                font-size: 17px;
+            }
+            #canvas {
+    background-color: black;
+    border: 2px solid white;
+    cursor: crosshair;
+    touch-action: none;
+    display: block;
+}
+
+        }
+    </style>
+
+    <style>
+      :root { --navy:#101a35; --blue:#6577f5; --muted:#aeb9d2; }
+      html, body { width:100%; min-height:100%; margin:0; padding:0; }
+      body { overflow:hidden; text-align:left; background:#0b1329; font-family:Inter,Segoe UI,Arial,sans-serif; }
+      .slider-viewport { position:fixed; inset:0; width:100%; height:100dvh; overflow:hidden; }
+      .slider-track { display:flex; width:200%; height:100%; transform:translateX(0); transition:transform .85s cubic-bezier(.77,0,.18,1); }
+      .slider-track.show-prediction { transform:translateX(-50%); }
+      .welcome-slide, .prediction-slide { position:relative; flex:0 0 50%; width:50%; height:100%; overflow-y:auto; }
+      .welcome-slide { display:flex; align-items:center; min-height:100%; padding:clamp(28px,7vw,100px); color:#fff; background:radial-gradient(circle at 78% 45%,#24396d 0,#17264b 27%,#101a35 58%,#0b1329 100%); isolation:isolate; }
+      .welcome-content { position:relative; z-index:2; width:min(650px,100%); }
+      .brand-mark { display:grid; place-items:center; width:52px; height:52px; margin-bottom:34px; border:1px solid #7788f5; border-radius:16px; color:#fff; font-size:27px; font-weight:800; background:#ffffff12; box-shadow:0 10px 35px #0003; }
+      .brand-mark span { color:#91a0ff; }
+      .eyebrow { margin:0 0 16px; color:#9eafff; font-size:12px; font-weight:700; letter-spacing:3px; }
+      .welcome-content h1 { margin:0; font-size:clamp(42px,7vw,76px); line-height:1.08; letter-spacing:-2.5px; font-weight:750; }
+      .welcome-content h1 span { display:block; color:#91a2ff; }
+      .welcome-description { max-width:560px; margin:25px 0 24px; color:#c5cee2; font-size:clamp(16px,2vw,19px); line-height:1.8; }
+      .welcome-tags { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:34px; }
+      .welcome-tags span { padding:9px 13px; border:1px solid #ffffff25; border-radius:30px; color:#dce3f5; background:#ffffff0b; font-size:12px; }
+      .start-button { display:inline-flex; align-items:center; gap:17px; margin:0; padding:7px 8px 7px 22px; border:1px solid #8796ff; border-radius:50px; background:#7182f6; color:#fff; font-size:15px; font-weight:650; box-shadow:0 12px 32px #5368ef55; transition:transform .2s,background .2s; }
+      .start-button:hover { transform:translateY(-2px); background:#8290ff; }
+      .arrow-circle { display:grid; place-items:center; width:42px; height:42px; border-radius:50%; background:#fff; color:#26366b; font-size:25px; line-height:1; }
+      .welcome-footer { margin-top:48px; color:#8390ad; font-size:12px; letter-spacing:.4px; }
+      .welcome-decoration { position:absolute; z-index:1; inset:0 0 0 auto; width:45%; pointer-events:none; opacity:.9; }
+      .digit { position:absolute; display:grid; place-items:center; color:#ffffff0d; font-weight:800; line-height:1; }
+      .digit-one { top:12%; right:18%; font-size:clamp(130px,22vw,290px); }
+      .digit-two { top:47%; right:45%; font-size:clamp(90px,14vw,180px); color:#93a2ff16; }
+      .digit-three { bottom:2%; right:9%; font-size:clamp(110px,18vw,230px); }
+      .digit-four { top:8%; right:55%; font-size:clamp(65px,10vw,130px); color:#93a2ff12; }
+      .orbit { position:absolute; top:50%; right:8%; width:min(36vw,420px); aspect-ratio:1; border:1px solid #91a2ff20; border-radius:50%; transform:translateY(-50%); }
+      .orbit-two { width:min(27vw,315px); right:16%; border-color:#91a2ff18; }
+      .prediction-slide { padding:54px 20px 35px; background:linear-gradient(135deg,#edf2fb,#f7f9fd); }
+      .prediction-slide .container { position:relative; max-width:850px; margin:0 auto; padding:30px; border-radius:20px; background:#fff; box-shadow:0 18px 55px #1c31501a; }
+      .prediction-slide .back-button { position:absolute; z-index:3; top:16px; left:20px; display:flex; align-items:center; gap:8px; margin:0; padding:9px 14px; border:1px solid #dce3ef; border-radius:30px; color:#33415e; background:#fff; font-size:13px; }
+      .prediction-slide .back-button:hover { background:#eef2ff; }
+      .prediction-slide h1 { margin-top:25px; color:#17213b; }
+      .prediction-slide h2 { color:#253451; }
+      .prediction-slide .hint { color:#66738a; }
+      .prediction-slide canvas { border:2px solid #26334c; border-radius:8px; }
+      .prediction-slide button:not(.back-button) { border-radius:8px; }
+      @media(max-width:700px) {
+        .welcome-slide { padding:34px 26px; }
+        .welcome-decoration { width:100%; opacity:.45; }
+        .welcome-content h1 { letter-spacing:-1.5px; }
+        .prediction-slide { padding:65px 12px 22px; }
+        .prediction-slide .container { padding:22px 14px; }
+        .prediction-slide .back-button { top:12px; left:12px; }
+      }
+      @media(prefers-reduced-motion:reduce) { .slider-track { transition:none; } }
+    </style>
+
+</head>
+
+<body>
+
+<div class="slider-viewport" id="sliderViewport">
+  <div class="slider-track" id="sliderTrack">
+    <section class="welcome-slide" aria-label="DigitLab welcome page">
+      <div class="welcome-content">
+        <div class="brand-mark">D<span>·</span></div>
+        <p class="eyebrow">HANDWRITTEN DIGIT RECOGNITION</p>
+        <h1>Welcome to <span>DigitLab</span></h1>
+        <p class="welcome-description">
+          Turn handwritten numbers into digital predictions. Draw a digit or upload an image
+          and let our machine-learning model recognize it in seconds.
+        </p>
+        <div class="welcome-tags">
+          <span>0–9 Digit Detection</span>
+          <span>AI Powered</span>
+          <span>Quick Predictions</span>
+        </div>
+        <button class="start-button" type="button" onclick="goToPrediction()" aria-label="Go to digit prediction">
+          <span>Get started</span><span class="arrow-circle" aria-hidden="true">→</span>
+        </button>
+        <p class="welcome-footer">A simple way to explore machine learning</p>
+      </div>
+      <div class="welcome-decoration" aria-hidden="true">
+        <span class="digit digit-one">7</span>
+        <span class="digit digit-two">2</span>
+        <span class="digit digit-three">9</span>
+        <span class="digit digit-four">0</span>
+        <span class="orbit orbit-one"></span><span class="orbit orbit-two"></span>
+      </div>
+    </section>
+    <section class="prediction-slide" aria-label="Digit prediction page">
+      <button class="back-button" type="button" onclick="goToWelcome()" aria-label="Back to welcome page">← <span>Back</span></button>
+<div class="container">
+
+    <h1>Handwritten Digit Recognition</h1>
+
+    <p>Draw a digit or upload an image to predict it.</p>
+
+
+    <!-- OPTION 1: DRAW A DIGIT -->
+
+    <section id="drawingSection">
+
+        <h2>Option 1: Draw a Digit</h2>
+
+        <p class="hint">Draw one digit from 0 to 9.</p>
+
+        <canvas id="canvas" width="280" height="280"></canvas>
+
+        <div>
+            <button
+                id="predictDrawBtn"
+                onclick="predictDrawing()">
+                Predict Drawing
+            </button>
+
+            <button onclick="clearCanvas()">
+                Clear
+            </button>
+        </div>
+
+        <!-- Canvas prediction appears here -->
+        <p
+            id="canvasResult"
+            class="result"
+            role="status"
+            aria-live="polite">
+        </p>
+
+    </section>
+
+
+    <hr>
+
+
+    <!-- OPTION 2: UPLOAD AN IMAGE -->
+
+    <section id="uploadSection">
+
+        <h2>Option 2: Upload an Image</h2>
+
+        <p class="hint">
+            Choose an image containing one handwritten digit.
+        </p>
+
+        <input
+            type="file"
+            id="imageInput"
+            accept="image/*"
+        >
+
+        <br>
+
+        <img
+            id="preview"
+            alt="Uploaded image preview"
+        >
+
+        <br>
+
+        <button
+            id="predictUploadBtn"
+            onclick="predictUploadedImage()">
+            Predict Uploaded Image
+        </button>
+
+        <!-- Uploaded-image prediction appears here -->
+        <p
+            id="uploadResult"
+            class="result"
+            role="status"
+            aria-live="polite">
+        </p>
+
+    </section>
+
+</div>
+    </section>
+  </div>
+</div>
+
+
+<script>
+function goToPrediction() {
+  document.getElementById("sliderTrack").classList.add("show-prediction");
+}
+function goToWelcome() {
+  document.getElementById("sliderTrack").classList.remove("show-prediction");
+}
+"use strict";
+
+document.addEventListener("DOMContentLoaded", () => {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const canvasResult = document.getElementById("canvasResult");
+    const uploadResult = document.getElementById("uploadResult");
+    const imageInput = document.getElementById("imageInput");
+    const preview = document.getElementById("preview");
+    const predictDrawBtn = document.getElementById("predictDrawBtn");
+    const predictUploadBtn = document.getElementById("predictUploadBtn");
+
+    let isDrawing = false;
+    let hasDrawing = false;
+
+    // Match the MNIST display convention: white digit on black background.
+    function resetCanvasStyle() {
+        ctx.lineWidth = 15;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = "white";
+    }
+
+    function getPosition(event) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (event.clientX - rect.left) * (canvas.width / rect.width),
+            y: (event.clientY - rect.top) * (canvas.height / rect.height)
+        };
+    }
+
+    // Pointer events support mouse, pen and touch.
+    canvas.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        isDrawing = true;
+        hasDrawing = true;
+        if (canvas.setPointerCapture) {
+            canvas.setPointerCapture(event.pointerId);
+        }
+        const pos = getPosition(event);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        // Draw a dot too, so a single click is visible.
+        ctx.lineTo(pos.x + 0.1, pos.y + 0.1);
+        ctx.stroke();
+    });
+
+    canvas.addEventListener("pointermove", (event) => {
+        if (!isDrawing) return;
+        event.preventDefault();
+        const pos = getPosition(event);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    });
+
+    function stopDrawing() {
+        isDrawing = false;
+        ctx.beginPath();
+    }
+
+    canvas.addEventListener("pointerup", stopDrawing);
+    canvas.addEventListener("pointercancel", stopDrawing);
+    canvas.addEventListener("lostpointercapture", stopDrawing);
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // The CSS background remains black; clearing removes only the strokes.
+        hasDrawing = false;
+        canvasResult.textContent = "";
+        resetCanvasStyle();
+    }
+    window.clearCanvas = clearCanvas;
+
+    async function sendImage(blob, resultElement, button) {
+        const formData = new FormData();
+        formData.append("image", blob, "digit.png");
+        const originalText = button ? button.textContent : "";
+        if (button) {
+            button.disabled = true;
+            button.textContent = "Predicting...";
+        }
+        resultElement.textContent = "Predicting...";
+
+        try {
+            const response = await fetch("/predict", {
+                method: "POST",
+                body: formData
+            });
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (_) {
+                throw new Error("Server returned an invalid response. Check the Flask terminal.");
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || `Prediction failed (HTTP ${response.status}).`);
+            }
+
+            const confidence = Number(data.confidence);
+            resultElement.textContent =
+                `Predicted Digit: ${data.predicted_digit} | Confidence: ${
+                    Number.isFinite(confidence) ? confidence.toFixed(2) + "%" : "N/A"
+                }`;
+        } catch (error) {
+            console.error("Prediction error:", error);
+            resultElement.textContent = "Error: " + error.message;
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+    }
+
+    async function predictDrawing() {
+        if (!hasDrawing) {
+            canvasResult.textContent = "Please draw a digit first.";
+            return;
+        }
+
+        // Convert the visible white-on-black drawing into black-on-white.
+        // The backend's border check will invert it to MNIST's white-on-black.
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext("2d");
+        tempCtx.fillStyle = "white";
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        // The canvas background is CSS-only (transparent in its actual pixel data).
+        // Invert the white strokes while copying them onto the white image so that
+        // Flask receives a black digit on a white background.
+        tempCtx.filter = "invert(1)";
+        tempCtx.drawImage(canvas, 0, 0);
+        tempCtx.filter = "none";
+        tempCanvas.toBlob(async (blob) => {
+            if (!blob) {
+                canvasResult.textContent = "Could not prepare the drawing. Please try again.";
+                return;
+            }
+            await sendImage(blob, canvasResult, predictDrawBtn);
+        }, "image/png");
+    }
+    window.predictDrawing = predictDrawing;
+
+    async function predictUploadedImage() {
+        if (!imageInput.files || imageInput.files.length === 0) {
+            uploadResult.textContent = "Please upload an image first.";
+            return;
+        }
+        await sendImage(imageInput.files[0], uploadResult, predictUploadBtn);
+    }
+    window.predictUploadedImage = predictUploadedImage;
+
+    imageInput.addEventListener("change", () => {
+        uploadResult.textContent = "";
+        const file = imageInput.files && imageInput.files[0];
+        if (!file) {
+            preview.removeAttribute("src");
+            preview.style.display = "none";
+            return;
+        }
+        if (!file.type.startsWith("image/")) {
+            uploadResult.textContent = "Please choose a valid image file.";
+            imageInput.value = "";
+            preview.removeAttribute("src");
+            preview.style.display = "none";
+            return;
+        }
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+    });
+
+    resetCanvasStyle();
+});
+</script>
+</body>
+</html>

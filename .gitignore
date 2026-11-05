@@ -1,0 +1,10 @@
+newvenv/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+debug_preprocessed.png
+.vscode/
+.DS_Store
+Thumbs.db
